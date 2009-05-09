@@ -52,10 +52,10 @@
       </varlistentry>
 
       <varlistentry>
-	<term><option>-t </option><replaceable>secs</replaceable></term>
-	<listitem>
-	  <para>Dump file rotation interval in seconds.</para>
-	</listitem>
+        <term><option>-t </option><replaceable>secs</replaceable></term>
+        <listitem>
+          <para>Dump file rotation interval in seconds.</para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
@@ -73,38 +73,38 @@
       </varlistentry>
 
       <varlistentry>
-	<term><option>-H </option></term>
-	<listitem>
-	  <para>Only capture link, network, and transport headers; do not capture application-layer data.</para>
-	</listitem>
+        <term><option>-H </option></term>
+        <listitem>
+          <para>Only capture link, network, and transport headers; do not capture application-layer data.</para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term><option>-S </option><replaceable>sample value</replaceable></term>
-	<listitem>
-	  <para>Sample the packet stream by only dumping 1 in every <replaceable>sample value</replaceable> packets.</para>
-	</listitem>
+        <term><option>-S </option><replaceable>sample value</replaceable></term>
+        <listitem>
+          <para>Sample the packet stream by only dumping 1 in every <replaceable>sample value</replaceable> packets.</para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term><option>-R </option></term>
-	<listitem>
-	  <para>Together with -S, sample the packets randomly, not systematically.</para>
-	</listitem>
+        <term><option>-R </option></term>
+        <listitem>
+          <para>Together with -S, sample the packets randomly, not systematically.</para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term><option>-P </option><replaceable>pidfile</replaceable></term>
-	<listitem>
-	  <para>Daemonize the process and write its PID to <replaceable>pidfile</replaceable>.</para>
-	</listitem>
+        <term><option>-P </option><replaceable>pidfile</replaceable></term>
+        <listitem>
+          <para>Daemonize the process and write its PID to <replaceable>pidfile</replaceable>.</para>
+        </listitem>
       </varlistentry>
 
       <varlistentry>
-	<term><option>-C </option><replaceable>config file</replaceable></term>
-	<listitem>
-	  <para>File to read configuration variables from. Instead of passing configuration through the command line, a file can be used to specify values for the <option>bpf</option>, <option>device</option>, <option>filefmt</option>, <option>group</option>, <option>interval</option>, <option>mode</option>, <option>owner</option>, <option>promisc</option>, and <option>snaplen</option> options (not all need to be specified; defaults will be used otherwise). See /usr/share/doc/pcaputils/examples/eth0 for an example.</para>
-	</listitem>
+        <term><option>-C </option><replaceable>config file</replaceable></term>
+        <listitem>
+          <para>File to read configuration variables from. Instead of passing configuration through the command line, a file can be used to specify values for the <option>bpf</option>, <option>device</option>, <option>filefmt</option>, <option>group</option>, <option>interval</option>, <option>mode</option>, <option>owner</option>, <option>promisc</option>, and <option>snaplen</option> options (not all need to be specified; defaults will be used otherwise). See /usr/share/doc/pcaputils/examples/eth0 for an example.</para>
+        </listitem>
       </varlistentry>
 
     </variablelist>
