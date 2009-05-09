@@ -218,7 +218,10 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 		DEBUG("packet limit reached");
 		close_and_exit();
 	}
-	if(hdr->ts.tv_sec > (time_start + pcapdump_duration)){
+	if(
+		pcapdump_duration > 0 &&
+		hdr->ts.tv_sec > (time_start + pcapdump_duration)
+	){
 		DEBUG("duration exceeded");
 		close_and_exit();
 	}
