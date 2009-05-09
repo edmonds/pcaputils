@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refsect1 PUBLIC "-//OASIS//DTD DocBook V4.4//EN" "file:///usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd" []>
+
+<refsect1>
+  <title>PCAPNET OPTIONS</title>
+  <variablelist>
+
+    <varlistentry>
+      <term><option>-i </option><replaceable>interface</replaceable></term>
+      <listitem>
+	<para>Input interface to read packets from.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><option>-r </option><replaceable>pcap file</replaceable></term>
+      <listitem>
+	<para>Dump file to read packets from.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><option>-w </option><replaceable>pcap file</replaceable></term>
+      <listitem>
+	<para>Dump file to write filtered packets to.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><option>-f </option><replaceable>expression</replaceable></term>
+      <listitem>
+	<para>BPF expression which selects packets to be filtered.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><option>-s </option><replaceable>snaplen</replaceable></term>
+      <listitem>
+	<para>Capture <replaceable>snaplen</replaceable> bytes of data from each packet.</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term><option>-p</option></term>
+      <listitem>
+	<para>Disable promiscuous mode sniffing.</para>
+      </listitem>
+    </varlistentry>
+
+  </variablelist>
+</refsect1>

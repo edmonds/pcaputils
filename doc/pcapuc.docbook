@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.4//EN" "file:///usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd" []>
+
+<refentry>
+  <refmeta>
+    <refentrytitle>pcapuc</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>pcapuc</refname>
+    <refpurpose>filter a pcap for IP addresses</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>pcapuc</command>
+      <arg rep="repeat"><replaceable class="parameter">OPTIONS</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>DESCRIPTION</title>
+    <para><command>pcapuc</command> parses an input pcap file and prints unique IP addresses and the number of packets each IP address appeared in. Optionally, <command>pcapuc</command> can limit its output to addresses that only appear in the source address field of the IP header, addresses that only appear in the destination address field, or sets of IP addresses that appear in the source and destination address fields.</para>
+  </refsect1>
+
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pcapnet.docbook"/>
+ 
+  <refsect1>
+    <title>PROGRAM OPTIONS</title>
+    <variablelist>
+
+      <varlistentry>
+	<term><option>-S</option></term>
+	<listitem>
+	  <para>count source IP addresses only</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-D</option></term>
+        <listitem>
+          <para>count destination IP addresses only</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-P</option></term>
+        <listitem>
+          <para>count pairs of IP addresses</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-C</option></term>
+        <listitem>
+          <para>output only the number of unique IP addresses or IP address pairs</para>
+        </listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+</refentry>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.4//EN" "file:///usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd" []>
+
+<refentry>
+  <refmeta>
+    <refentrytitle>pcapip</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>pcapip</refname>
+    <refpurpose>filter a pcap for IP addresses</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>pcapip</command>
+      <arg rep="repeat"><replaceable class="parameter">OPTIONS</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>DESCRIPTION</title>
+    <para><command>pcapip</command> filters an input pcap file based on a file containing IP addresses to be matched.</para>
+  </refsect1>
+
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pcapnet.docbook"/>
+ 
+  <refsect1>
+    <title>PROGRAM OPTIONS</title>
+    <variablelist>
+
+      <varlistentry>
+	<term><option>-l </option><replaceable>file</replaceable></term>
+	<listitem>
+	  <para>File containing list of IP addresses, one per line.</para>
+	</listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+
+</refentry>

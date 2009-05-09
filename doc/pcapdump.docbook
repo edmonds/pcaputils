@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.4//EN" "file:///usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd" []>
+
+<refentry>
+  <refmeta>
+    <refentrytitle>pcapdump</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>pcapdump</refname>
+    <refpurpose>dedicated packet capture utility</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>pcapdump</command>
+      <arg rep="repeat"><replaceable class="parameter">OPTIONS</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>DESCRIPTION</title>
+    <para><command>pcapdump</command> captures packets from a network interface and writes them to a dumpfile. The filename argument given to <option>-w</option> will be formated by <function>strftime(3)</function>.</para>
+  </refsect1>
+
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pcapnet.docbook"/>
+ 
+  <refsect1>
+    <title>PROGRAM OPTIONS</title>
+    <variablelist>
+
+      <varlistentry>
+        <term><option>-u </option><replaceable>owner</replaceable></term>
+        <listitem>
+          <para>Set the output file's owning user to <replaceable>owner</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-g </option><replaceable>group</replaceable></term>
+        <listitem>
+          <para>Set the output file's owning group to <replaceable>group</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-m </option><replaceable>mode</replaceable></term>
+        <listitem>
+          <para>Set the output file's mode to <replaceable>mode</replaceable>, specified in octal.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-t </option><replaceable>secs</replaceable></term>
+	<listitem>
+	  <para>Dump file rotation interval in seconds.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-c </option><replaceable>count</replaceable></term>
+        <listitem>
+          <para>Exit after capturing <replaceable>count</replaceable> packets.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-H </option></term>
+	<listitem>
+	  <para>Only capture link, network, and transport headers; do not capture application-layer data.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-S </option><replaceable>sample value</replaceable></term>
+	<listitem>
+	  <para>Sample the packet stream by only dumping 1 in every <replaceable>sample value</replaceable> packets.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-P </option><replaceable>pidfile</replaceable></term>
+	<listitem>
+	  <para>Daemonize the process and write its PID to <replaceable>pidfile</replaceable>.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-C </option><replaceable>config file</replaceable></term>
+	<listitem>
+	  <para>File to read configuration variables from. Instead of passing configuration through the command line, a file can be used to specify values for the <option>bpf</option>, <option>device</option>, <option>filefmt</option>, <option>group</option>, <option>interval</option>, <option>mode</option>, <option>owner</option>, <option>promisc</option>, and <option>snaplen</option> options (not all need to be specified; defaults will be used otherwise). See /usr/share/doc/pcaputils/examples/eth0 for an example.</para>
+	</listitem>
+      </varlistentry>
+
+    </variablelist>
+  </refsect1>
+  
+</refentry>
