@@ -21,7 +21,7 @@
 
   <refsect1>
     <title>DESCRIPTION</title>
-    <para><command>pcappick</command> filters an input pcap file based on a file containing IP addresses to be matched.</para>
+    <para><command>pcappick</command> reads an input pcap file and picks a specific frame to output.</para>
   </refsect1>
 
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pcapnet.docbook"/>
