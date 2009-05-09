@@ -31,10 +31,10 @@
     <variablelist>
 
       <varlistentry>
-	<term><option>-c </option><replaceable>number</replaceable></term>
-	<listitem>
-	  <para>Frame number to pick.</para>
-	</listitem>
+        <term><option>-c </option><replaceable>number</replaceable></term>
+        <listitem>
+          <para>Frame number to pick.</para>
+        </listitem>
       </varlistentry>
 
     </variablelist>
