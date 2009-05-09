@@ -103,7 +103,7 @@
       <varlistentry>
         <term><option>-C </option><replaceable>config file</replaceable></term>
         <listitem>
-          <para>File to read configuration variables from. Instead of passing configuration through the command line, a file can be used to specify values for the <option>bpf</option>, <option>device</option>, <option>filefmt</option>, <option>group</option>, <option>interval</option>, <option>mode</option>, <option>owner</option>, <option>promisc</option>, and <option>snaplen</option> options (not all need to be specified; defaults will be used otherwise). See /usr/share/doc/pcaputils/examples/eth0 for an example.</para>
+          <para>File to read configuration variables from. Instead of passing configuration through the command line, a file can be used to specify values for the <option>bpf</option>, <option>device</option>, <option>filefmt</option>, <option>group</option>, <option>interval</option>, <option>mode</option>, <option>owner</option>, <option>promisc</option>, and <option>snaplen</option> options (not all need to be specified; defaults will be used otherwise). See /usr/share/doc/pcaputils/examples/pcapdump/eth0 for an example.</para>
         </listitem>
       </varlistentry>
 
