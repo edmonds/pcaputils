@@ -66,6 +66,13 @@
       </varlistentry>
 
       <varlistentry>
+        <term><option>-T </option><replaceable>secs</replaceable></term>
+        <listitem>
+          <para>Exit after capturing during this amount of seconds.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
 	<term><option>-H </option></term>
 	<listitem>
 	  <para>Only capture link, network, and transport headers; do not capture application-layer data.</para>
@@ -76,6 +83,13 @@
 	<term><option>-S </option><replaceable>sample value</replaceable></term>
 	<listitem>
 	  <para>Sample the packet stream by only dumping 1 in every <replaceable>sample value</replaceable> packets.</para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term><option>-R </option></term>
+	<listitem>
+	  <para>Together with -S, sample the packets randomly, not systematically.</para>
 	</listitem>
       </varlistentry>
 
@@ -94,6 +108,7 @@
       </varlistentry>
 
     </variablelist>
+
   </refsect1>
   
 </refentry>
