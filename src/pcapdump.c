@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include <util/net.h>
 #include <util/pcapnet.h>
 #include <util/util.h>
+#include <util/rng.h>
 
 #define FNAME_MAXLEN 512
 
@@ -60,9 +61,11 @@ static cfgopt_t cfg[] = {
 	{ 'g', "group",         CONFIG_STR, {}, "root",  "output file owning group" },
 	{ 'm', "mode",          CONFIG_OCT, {}, "0600",  "output file mode" },
 	{ 't', "interval",      CONFIG_DEC, {}, "86400", "output file rotation interval" },
+	{ 'T', "duration",	CONFIG_DEC, {}, NULL,    "capture duration in seconds" },
 	{ 'c', "count",         CONFIG_DEC, {}, NULL,    "packet count limit" },
 	{ 'H', "headersonly",   CONFIG_BOOL,{}, "0",     "dump headers only" },
 	{ 'S', "sample",        CONFIG_DEC, {}, "0",     "sample value" },
+	{ 'R', "random",	CONFIG_BOOL,{}, "0",     "random sampling of packets" },
 	{ 'w', "filefmt",       CONFIG_STR, {}, NULL,    "output file format" },
 	{ 'P', "pidfile",       CONFIG_STR, {}, NULL,    "pid file" },
 	cfgopt_cfgfile,
@@ -80,12 +83,14 @@ static int pcapdump_interval;
 static int64_t count_bytes;
 static int64_t count_packets;
 static int64_t pcapdump_packetlimit = -1;
+static int64_t pcapdump_duration = -1;
 static int64_t total_count_bytes;
 static int64_t total_count_dropped;
 static int64_t total_count_packets;
 static time_t time_lastdump;
 static time_t time_start;
 
+static bool pcapdump_sample_random = false;
 static int pcapdump_sample;
 static int pcapdump_sample_value;
 
@@ -174,6 +179,7 @@ static void load_config(void){
 	pa.snaplen = cfgopt_get_num(cfg, "snaplen");
 	pcapdump_interval = cfgopt_get_num(cfg, "interval");
 	pcapdump_packetlimit = cfgopt_get_num(cfg, "count");
+	pcapdump_duration = cfgopt_get_num(cfg, "duration");
 }
 
 static bool has_config_changed(void){
@@ -185,6 +191,7 @@ static bool has_config_changed(void){
 
 	if(
 		cfgopt_get_num(cfg, "interval") != pcapdump_interval ||
+		cfgopt_get_num(cfg, "duration") != pcapdump_duration ||
 		cfgopt_get_bool(cfg, "promisc")  != pa.promisc ||
 		cfgopt_get_num(cfg, "snaplen")  != pa.snaplen ||
 		strcmp(pa.bpf_string,   cfgopt_get_str(cfg, "bpf")) != 0 ||
@@ -209,6 +216,10 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 		total_count_packets + count_packets >= pcapdump_packetlimit
 	){
 		DEBUG("packet limit reached");
+		close_and_exit();
+	}
+	if(hdr->ts.tv_sec > (time_start + pcapdump_duration)){
+		DEBUG("duration exceeded");
 		close_and_exit();
 	}
 	if(is_new_interval(hdr->ts.tv_sec))
@@ -238,13 +249,24 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 }
 
 static bool should_sample(void){
-	if(--pcapdump_sample_value == 0){
-		pcapdump_sample_value = pcapdump_sample;
-		return true;
+	/* See RFC 5475 for a description of sampling techniques. Comments
+	 * in this function use the RFC terminology. */
+	if(!pcapdump_sample_random) {
+		/* Systematic count-based sampling, section 5.1 */
+		if(--pcapdump_sample_value == 0){
+			pcapdump_sample_value = pcapdump_sample;
+			return true;
+		}else{
+			return false;
+		}
 	}else{
-		return false;
+		/* Uniform probabilistic sampling, section 5.2.2.1 */
+		if(rng_randint(0, pcapdump_sample - 1) == 0){
+			return true;
+		}else{
+			return false;
+		}
 	}
-	return true;
 }
 
 static inline bool is_new_interval(time_t t){
@@ -376,6 +398,11 @@ static void parse_args(int argc, char **argv){
 		usage("use fully qualified config file path");
 	headers_only = cfgopt_get_bool(cfg, "headersonly");
 	pcapdump_sample = pcapdump_sample_value = cfgopt_get_num(cfg, "sample");
+	pcapdump_sample_random = cfgopt_get_bool(cfg, "random");
+	if(pcapdump_sample_random && (pcapdump_sample <= 0))
+		usage("random sampling requires a random value");
+	if(pcapdump_sample_random)
+		rng_seed(false);
 }
 
 static void usage(const char *msg){
