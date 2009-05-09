@@ -1,0 +1,7 @@
+*.d
+*.o
+src/pcapdump
+src/pcapip
+src/pcappick
+src/pcapuc
+util/util.a
