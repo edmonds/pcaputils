@@ -115,6 +115,19 @@ const u_char *pcapnet_start_network_header(
 			}
 			break;
 		}
+		case DLT_RAW: {
+			if(*len < sizeof(struct iphdr))
+				return NULL;
+			const struct iphdr *ip = (const struct iphdr *) pkt;
+			if(ip->ihl == 4U){
+				*etype = ETHERTYPE_IP;
+			}else if(ip->ihl == 6U){
+				*etype = ETHERTYPE_IPV6;
+			}else{
+				return NULL;
+			}
+			break;
+		}
 #ifdef DLT_LINUX_SLL
 		case DLT_LINUX_SLL: {
 			if(*len < 16)
@@ -260,6 +273,7 @@ void pcapnet_check_datalink_type(int dlt){
 		case DLT_NULL:
 		case DLT_LOOP:
 		case DLT_EN10MB:
+		case DLT_RAW:
 #ifdef DLT_LINUX_SLL
 		case DLT_LINUX_SLL:
 #endif
