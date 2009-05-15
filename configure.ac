@@ -17,6 +17,7 @@ AC_SUBST([EXTRA_CFLAGS])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h inttypes.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h syslog.h unistd.h], [], [AC_MSG_ERROR([required header not found])])
+AC_CHECK_HEADERS([endian.h sys/endian.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
