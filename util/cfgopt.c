@@ -24,13 +24,12 @@ THE SOFTWARE.
 
 */
 
-#define _GNU_SOURCE
-
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "cfgopt.h"
+#include "getline.h"
 #include "scanfmt.h"
 #include "util.h"
 
