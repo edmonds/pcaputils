@@ -67,6 +67,6 @@ __inline u16 checksum_net(const void *p, unsigned len)
 #if __BYTE_ORDER == __LITTLE_ENDIAN	
 	return (u16) (~sum);
 #else
-	return bswap16((u16) (~sum));
+	return my_bswap16((u16) (~sum));
 #endif
 }

@@ -40,14 +40,14 @@ THE SOFTWARE.
 
 /* functions */
 
-u32 bswap32(u32 x){
+u32 my_bswap32(u32 x){
 	return  ((x << 24) & 0xff000000 ) |
 		((x <<  8) & 0x00ff0000 ) |
 		((x >>  8) & 0x0000ff00 ) |
 		((x >> 24) & 0x000000ff );
 }
 
-u16 bswap16(u16 x){
+u16 my_bswap16(u16 x){
 	return (u16) ((x & 0xff) << 8 | (x & 0xff00) >> 8);
 }
 

@@ -70,10 +70,10 @@
 #define TCPFLAGS_STRLEN sizeof("FSRPAU")
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-#define my_ntohs(x) bswap16(x)
-#define my_htons(x) bswap16(x)
-#define my_ntohl(x) bswap32(x)
-#define my_htonl(x) bswap32(x)
+#define my_ntohs(x) my_bswap16(x)
+#define my_htons(x) my_bswap16(x)
+#define my_ntohl(x) my_bswap32(x)
+#define my_htonl(x) my_bswap32(x)
 #else
 #define my_ntohs(x) (x)
 #define my_htons(x) (x)
@@ -259,7 +259,7 @@ bool gai6(const char *hostname, char ip[16]);
 char *human_readable_rate(u64 packets, u64 bytes, unsigned interval);
 ipaddr_range_t sips_to_range(char *sip0, char *sip1);
 u16 random_unprivileged_port(void);
-u16 bswap16(u16 x);
-u32 bswap32(u32 x);
+u16 my_bswap16(u16 x);
+u32 my_bswap32(u32 x);
 
 #endif
