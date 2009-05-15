@@ -95,10 +95,12 @@ extern bool util_flag_verbose;
 #define likely(x)	__builtin_expect((x), 1)
 #define unlikely(x)	__builtin_expect((x), 0)
 
-#if __GNUC__ >= 3
-# define __unused __attribute__((unused))
-#else
-# define __unused
+#ifndef __unused
+# if __GNUC__ >= 3
+#  define __unused __attribute__((unused))
+# else
+#  define __unused
+# endif
 #endif
 
 #if __GNUC_GNU_INLINE__
