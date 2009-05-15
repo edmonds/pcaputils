@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 */
 
+#include <netinet/in.h>
 #include <errno.h>
 #include <netdb.h>
 #include <stdbool.h>
