@@ -7,6 +7,7 @@ libutil_a_SOURCES = \
 	checksum.c \
 	daemon.c \
 	file.c \
+	getline.c \
 	net.c \
 	pcapnet.c \
 	rate.c \
@@ -24,6 +25,7 @@ EXTRA_DIST = \
 	checksum.h \
 	daemon.h \
 	file.h \
+	getline.h \
 	net.h \
 	pcapnet.h \
 	rate.h \
