@@ -80,6 +80,7 @@ static bool reload_config = false;
 static bool stop_running = false;
 static char *pcapdump_filefmt;
 static int pcapdump_interval;
+static int last_ifdrop;
 static int64_t count_bytes;
 static int64_t count_packets;
 static int64_t pcapdump_packetlimit = -1;
@@ -326,7 +327,9 @@ static void update_and_print_stats(void){
 
 	rate = human_readable_rate(count_packets, count_bytes, pcapdump_interval);
 	if(pcap_stats(pa.handle, &stat) == 0){
-		total_count_dropped += (count_dropped = stat.ps_drop);
+		count_dropped = stat.ps_drop - last_ifdrop;
+		total_count_dropped = stat.ps_drop;
+		last_ifdrop = stat.ps_drop;
 		if(time_lastdump > 0 && pcapdump_interval > 0)
 			DEBUG("%" PRIi64 " packets dumped (%u dropped) at %s",
 				count_packets, count_dropped, rate
