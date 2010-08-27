@@ -1,7 +1,7 @@
 AC_PREREQ([2.63])
-AC_INIT([pcaputils], [0.9], [edmonds@debian.org])
+AC_INIT([pcaputils], [0.10], [edmonds@debian.org])
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([1.9 foreign])
+AM_INIT_AUTOMAKE([1.10 foreign])
 
 # Checks for programs.
 AC_PROG_CC
