@@ -318,6 +318,7 @@ static void reset_dump(void){
 	);
 	pcapnet_init_dumpfd(&pa, fd);
 	DEBUG("opened %s", fname);
+	FREE(fname);
 }
 
 static void update_and_print_stats(void){
