@@ -1,8 +1,6 @@
 #ifndef RSEUTIL_NET_H
 #define RSEUTIL_NET_H
 
-#include "config.h"
-
 #ifdef HAVE_ENDIAN_H
 # include <endian.h>
 #endif
