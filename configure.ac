@@ -1,44 +1,45 @@
-AC_PREREQ([2.63])
-AC_INIT([pcaputils], [0.10], [edmonds@debian.org])
-AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE([1.10 foreign])
+AC_PREREQ(2.60)
+AC_INIT([pcaputils], [0.11], [edmonds@debian.org])
+AC_CONFIG_SRCDIR([src/pcapdump.c])
+AC_CONFIG_AUX_DIR([build-aux])
+AM_INIT_AUTOMAKE([foreign 1.11 -Wall -Wno-portability silent-rules subdir-objects])
+AC_PROG_CC_STDC
+AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
+AM_SILENT_RULES([yes])
 
-# Checks for programs.
-AC_PROG_CC
-AC_PROG_RANLIB
+my_CFLAGS="-Wall \
+-Wmissing-declarations -Wmissing-prototypes \
+-Wnested-externs -Wpointer-arith \
+-Wpointer-arith -Wsign-compare -Wchar-subscripts \
+-Wstrict-prototypes -Wshadow \
+-Wformat-security"
+AC_SUBST([my_CFLAGS])
 
-# C compiler checks
-if test "x$GCC" = xyes; then
-    EXTRA_CFLAGS="-Wall -Wextra -Werror -std=gnu99"
-fi
-AC_SUBST([EXTRA_CFLAGS])
+AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_FILES([Makefile])
 
-# Checks for libraries.
+AC_CHECK_HEADER([pcap.h], [], [AC_MSG_ERROR([required header file not found])])
+AC_SEARCH_LIBS([pcap_create], [pcap],
+    AC_DEFINE([HAVE_PCAP_CREATE], [1], [Define to 1 if pcap_create() is available.])
+)
 
-# Checks for header files.
-AC_CHECK_HEADERS([fcntl.h inttypes.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/param.h sys/socket.h sys/time.h syslog.h unistd.h], [], [AC_MSG_ERROR([required header not found])])
-AC_CHECK_HEADERS([endian.h sys/endian.h execinfo.h])
+AC_CHECK_HEADER([Judy.h], [], [AC_MSG_ERROR([required header file not found])])
+AC_SEARCH_LIBS([JudyLNext], [Judy],
+    AC_DEFINE([HAVE_JUDY], [1], [Define to 1 if libJudy is available.])
+)
 
-# Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
-AC_TYPE_UID_T
-AC_C_INLINE
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-AC_TYPE_INT8_T
-AC_TYPE_MODE_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
-
-# Checks for library functions.
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([alarm gettimeofday socket strcasecmp strdup strerror strtoul], [], [AC_MSG_ERROR([required function not found])])
-
-AC_CONFIG_FILES([Makefile src/Makefile util/Makefile])
 AC_OUTPUT
+AC_MSG_RESULT([
+    $PACKAGE $VERSION
+
+        compiler:               ${CC}
+        cflags:                 ${CFLAGS}
+        ldflags:                ${LDFLAGS}
+        libs:                   ${LIBS}
+
+        prefix:                 ${prefix}
+        sysconfdir:             ${sysconfdir}
+        libdir:                 ${libdir}
+        includedir:             ${includedir}
+])
