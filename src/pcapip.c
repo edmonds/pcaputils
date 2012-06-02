@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 */
 
-#define _GNU_SOURCE
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
