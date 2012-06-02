@@ -410,6 +410,7 @@ static void parse_args(int argc, char **argv){
 		usage("random sampling requires a random value");
 	if(pcapdump_sample_random)
 		rng_seed(false);
+	cfgopt_free(cur);
 }
 
 static void usage(const char *msg){
