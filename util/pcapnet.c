@@ -58,6 +58,8 @@ void pcapnet_load_cfg(pcap_args_t *pa, cfgopt_t *cfg){
 		pa->fname_out = strdup(str);
 	if((str = cfgopt_get_str(cfg, "bpf")) && str && str[0] != '\0')
 		pa->bpf_string = strdup(str);
+	if((str = cfgopt_get_str(cfg, "kickcmd")) && str && str[0] != '\0')
+		pa->kickcmd = strdup(str);
 
 	if((cur = cfgopt_get(cfg, "snaplen")) && cur->val.num)
 		pa->snaplen = *cur->val.num;
@@ -406,6 +408,7 @@ void pcapnet_close(pcap_args_t *pa){
 	FREE(pa->dev_out);
 	FREE(pa->fname);
 	FREE(pa->fname_out);
+	FREE(pa->kickcmd);
 }
 
 void pcapnet_close_dump(pcap_args_t *pa){
@@ -415,6 +418,14 @@ void pcapnet_close_dump(pcap_args_t *pa){
 		pcap_dump_flush(pa->dumper);
 		pcap_dump_close(pa->dumper);
 		pa->dumper = NULL;
+		if(pa->kickcmd != NULL && pa->fname_out != NULL){
+			char *cmd = NULL;
+			if(asprintf(&cmd, "%s \"%s\" &", pa->kickcmd, pa->fname_out) < 0)
+				ERROR("cannot initialize kick command string");
+			DEBUG("running '%s'", cmd);
+			system(cmd);
+			free(cmd);
+		}
 	}
 }
 

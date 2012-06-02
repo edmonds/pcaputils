@@ -31,6 +31,13 @@
     <variablelist>
 
       <varlistentry>
+        <term><option>-k </option><replaceable>command</replaceable></term>
+        <listitem>
+          <para>When closing the pcap capture file, run <replaceable>command</replaceable>, with the file name as an argument.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><option>-u </option><replaceable>owner</replaceable></term>
         <listitem>
           <para>Set the output file's owning user to <replaceable>owner</replaceable>.</para>

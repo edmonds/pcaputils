@@ -57,6 +57,7 @@ THE SOFTWARE.
 #define pcapcfg_bpf		{ 'f', "bpf",		CONFIG_STR,	{}, NULL,	"bpf filter" }
 #define pcapcfg_snaplen		{ 's', "snaplen",	CONFIG_DEC,	{}, "1522",	"capture length" }
 #define pcapcfg_promisc		{ 'p', "promisc",	CONFIG_BOOL,	{}, "1",	"disable promiscuous mode" }
+#define pcapcfg_kickcmd		{ 'k', "kickcmd",	CONFIG_STR,	{}, NULL,	"kick off command after file rotation" }
 
 typedef struct pcap_args {
 	bool promisc;
@@ -65,6 +66,7 @@ typedef struct pcap_args {
 	char *dev_out;
 	char *fname;
 	char *fname_out;
+	char *kickcmd;
 	int datalink;
 	int datalink_out;
 	int dumpfd;

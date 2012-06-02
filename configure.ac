@@ -19,7 +19,11 @@ AC_SUBST([my_CFLAGS])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES([Makefile])
 
-AC_CHECK_FUNC([getline], [], [AC_MSG_ERROR([required system function not found])])
+AC_CHECK_FUNCS(
+    [asprintf getline],
+    [],
+    [AC_MSG_ERROR([required system function not found])]
+)
 
 AC_CHECK_HEADER([pcap.h], [], [AC_MSG_ERROR([required header file not found])])
 AC_SEARCH_LIBS([pcap_create], [pcap],
