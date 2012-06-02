@@ -55,7 +55,7 @@ THE SOFTWARE.
 #define pcapcfg_readfile	{ 'r', "readfile",	CONFIG_STR,	{}, NULL,	"input file" }
 #define pcapcfg_writefile	{ 'w', "writefile",	CONFIG_STR,	{}, NULL,	"output file" }
 #define pcapcfg_bpf		{ 'f', "bpf",		CONFIG_STR,	{}, NULL,	"bpf filter" }
-#define pcapcfg_snaplen		{ 's', "snaplen",	CONFIG_DEC,	{}, "1518",	"capture length" }
+#define pcapcfg_snaplen		{ 's', "snaplen",	CONFIG_DEC,	{}, "1522",	"capture length" }
 #define pcapcfg_promisc		{ 'p', "promisc",	CONFIG_BOOL,	{}, "1",	"disable promiscuous mode" }
 
 typedef struct pcap_args {

@@ -290,7 +290,7 @@ void pcapnet_init(pcap_args_t *pa){
 	if(!(pa->dev || pa->fname))
 		ERROR("need a packet capture source");
 	if(pa->snaplen < 0 || pa->snaplen > 65536){
-		pa->snaplen = 1518;
+		pa->snaplen = 1522;
 	}
 	if(pa->dev){
 		DEBUG("opening capture interface %s%s%s%s",
