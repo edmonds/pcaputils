@@ -63,6 +63,8 @@ void pcapnet_load_cfg(pcap_args_t *pa, cfgopt_t *cfg){
 
 	if((cur = cfgopt_get(cfg, "snaplen")) && cur->val.num)
 		pa->snaplen = *cur->val.num;
+	if((cur = cfgopt_get(cfg, "buffersize")) && cur->val.num)
+		pa->buffer_size = *cur->val.num;
 	if((cur = cfgopt_get(cfg, "promisc")) && cur->val.boolean)
 		pa->promisc = *cur->val.boolean;
 }
@@ -301,7 +303,7 @@ void pcapnet_init(pcap_args_t *pa){
 			pa->bpf_string ? pa->bpf_string : "",
 			pa->bpf_string ? "'" : ""
 		);
-		pcapnet_init_device(&pa->handle, pa->dev, pa->snaplen, pa->to_ms, pa->promisc);
+		pcapnet_init_device(&pa->handle, pa->dev, pa->snaplen, pa->to_ms, pa->buffer_size, pa->promisc);
 		pcapnet_init_bpf(pa);
 	}
 	if(pa->dev_out){
@@ -309,7 +311,7 @@ void pcapnet_init(pcap_args_t *pa){
 		if(pa->dev && strcmp(pa->dev, pa->dev_out) == 0){
 			pa->handle_out = pa->handle;
 		}else{
-			pcapnet_init_device(&pa->handle_out, pa->dev_out, 1, 0, true);
+			pcapnet_init_device(&pa->handle_out, pa->dev_out, 1, 0, pa->buffer_size, true);
 		}
 	}
 	if(pa->fname){
@@ -338,7 +340,7 @@ void pcapnet_init(pcap_args_t *pa){
 void pcapnet_reinit_device(pcap_args_t *pa){
 	if(pa->handle)
 		pcap_close(pa->handle);
-	pcapnet_init_device(&pa->handle, pa->dev, pa->snaplen, pa->to_ms, pa->promisc);
+	pcapnet_init_device(&pa->handle, pa->dev, pa->snaplen, pa->to_ms, pa->buffer_size, pa->promisc);
 	pcapnet_init_bpf(pa);
 }
 
@@ -351,10 +353,10 @@ void pcapnet_init_bpf(pcap_args_t *pa){
 	}
 }
 
-void pcapnet_init_device(pcap_t **pcap, char *dev, int snaplen, int to_ms, bool promisc){
+void pcapnet_init_device(pcap_t **pcap, char *dev, int snaplen, int to_ms, int buffer_size, bool promisc){
 	char pcap_errbuf[PCAP_ERRBUF_SIZE];
-	if(NULL == (*pcap = pcap_open_live(dev, snaplen, promisc, to_ms, pcap_errbuf)))
-		ERROR("pcap_open_live failed: %s", pcap_errbuf);
+	if(NULL == (*pcap = pcapnet_open_live(dev, snaplen, promisc, to_ms, buffer_size, pcap_errbuf)))
+		ERROR("pcapnet_open_live failed: %s", pcap_errbuf);
 }
 
 void pcapnet_init_dump(pcap_args_t *pa, char *fname){
@@ -397,10 +399,12 @@ void pcapnet_init_file(pcap_t **pcap, char *fname){
 void pcapnet_close(pcap_args_t *pa){
 	pcapnet_close_dump(pa);
 	if(pa->handle_out){
+		DEBUG("closing handle_out");
 		pcap_close(pa->handle_out);
 		pa->handle_out = NULL;
 	}
 	if(pa->handle){
+		DEBUG("closing handle");
 		pcap_close(pa->handle);
 		pa->handle = NULL;
 	}
@@ -411,13 +415,37 @@ void pcapnet_close(pcap_args_t *pa){
 	FREE(pa->kickcmd);
 }
 
+/* see sf-pcap.c (pcap_dump_flush and pcap_dump_close) */
 void pcapnet_close_dump(pcap_args_t *pa){
 	if(pa->dumper){
 		if(pa->fname_out)
 			DEBUG("closing pcap file %s", pa->fname_out);
-		pcap_dump_flush(pa->dumper);
-		pcap_dump_close(pa->dumper);
+
+		sigset_t new_mask;
+		sigset_t old_mask;
+
+		if (sigfillset(&new_mask) == -1)
+			ERROR("initializing full signal set failed: %s", strerror(errno));
+		if (sigemptyset(&old_mask) == -1)
+			ERROR("initializing empty signal set failed: %s", strerror(errno));
+
+		if (sigprocmask(SIG_BLOCK, &new_mask, &old_mask) == -1)
+			ERROR("blocking signals failed: %s", strerror(errno));
+
+		if (fflush((FILE *)pa->dumper) != 0)
+			ERROR("fflush failed: %s", strerror(errno));
+
+		if (ferror((FILE *)pa->dumper) != 0)
+			ERROR("ferror failed: %s", strerror(errno));
+
+		if (fclose((FILE *)pa->dumper) != 0)
+			ERROR("fclose failed: %s", strerror(errno));
+
+		if (sigprocmask(SIG_SETMASK, &old_mask, NULL) == -1)
+			ERROR("unblocking signals failed: %s", strerror(errno));
+
 		pa->dumper = NULL;
+
 		if(pa->kickcmd != NULL && pa->fname_out != NULL){
 			char *cmd = NULL;
 			if(asprintf(&cmd, "%s \"%s\" &", pa->kickcmd, pa->fname_out) < 0)
@@ -432,7 +460,10 @@ void pcapnet_close_dump(pcap_args_t *pa){
 void pcapnet_packet_loop(pcap_args_t *pa, pcap_handler cb){
 	if(!pa || !(pa->handle))
 		ERROR("pcap handle not initialized");
-	pcap_loop(pa->handle, -1, cb, (void *)pa);
+	int res = pcap_loop(pa->handle, -1, cb, (void *)pa);
+	DEBUG("pcap_loop returned %i", res);
+	if (res == -1)
+		ERROR("pcap_loop failed: %s", pcap_geterr(pa->handle));
 }
 
 void pcapnet_break_loop(pcap_args_t *pa){
@@ -457,4 +488,85 @@ void pcapnet_print_pkt(const struct pcap_pkthdr *hdr, const u_char *pkt){
 		}
 		fprintf(stderr, "%2.x ", pkt[i]);
 	}
+}
+
+/* copied from pcap-int.h */
+struct pcap_timeval {
+	bpf_int32 tv_sec;       /* seconds */
+	bpf_int32 tv_usec;      /* microseconds */
+};
+
+/* copied from pcap-int.h */
+struct pcap_sf_pkthdr {
+	struct pcap_timeval ts; /* time stamp */
+	bpf_u_int32 caplen;     /* length of portion present */
+	bpf_u_int32 len;        /* length this packet (off wire) */
+};
+
+/* copied from sf-pcap.c - adapted to be safely used with signals */
+void pcapnet_dump_pkt(u_char *dumper, const struct pcap_pkthdr *h, const u_char *pkt){
+	FILE *f;
+	struct pcap_sf_pkthdr sf_hdr;
+	sigset_t new_mask;
+	sigset_t old_mask;
+
+	f = (FILE *)dumper;
+
+	sf_hdr.ts.tv_sec  = h->ts.tv_sec;
+	sf_hdr.ts.tv_usec = h->ts.tv_usec;
+	sf_hdr.caplen     = h->caplen;
+	sf_hdr.len        = h->len;
+
+	if (sigfillset(&new_mask) == -1)
+		ERROR("initializing full signal set failed: %s", strerror(errno));
+	if (sigemptyset(&old_mask) == -1)
+		ERROR("initializing empty signal set failed: %s", strerror(errno));
+
+	if (sigprocmask(SIG_BLOCK, &new_mask, &old_mask) == -1)
+		ERROR("blocking signals failed: %s", strerror(errno));
+
+	if (fwrite(&sf_hdr, sizeof(sf_hdr), 1, f) != 1)
+		ERROR("writing packet header failed: %s", strerror(errno));
+	if (fwrite(pkt, h->caplen, 1, f) != 1)
+		ERROR("writing packet body failed: %s", strerror(errno));
+
+	if (sigprocmask(SIG_SETMASK, &old_mask, NULL) == -1)
+		ERROR("unblocking signals failed: %s", strerror(errno));
+}
+
+/* see pcap.c (pcap_open_live) - added setting the buffer size */
+pcap_t * pcapnet_open_live(const char *source, int snaplen, int promisc, int to_ms, int buffer_size, char *errbuf){
+	pcap_t *p;
+	int status;
+
+	p = pcap_create(source, errbuf);
+	if (p == NULL)
+		return (NULL);
+
+	status = pcap_set_snaplen(p, snaplen);
+	if (status < 0)
+		goto fail;
+	status = pcap_set_promisc(p, promisc);
+	if (status < 0)
+		goto fail;
+	status = pcap_set_timeout(p, to_ms);
+	if (status < 0)
+		goto fail;
+	status = pcap_set_buffer_size(p, buffer_size);
+	if (status < 0)
+		goto fail;
+
+	status = pcap_activate(p);
+	if (status < 0)
+		goto fail;
+
+	return (p);
+
+fail:
+	if (status == PCAP_ERROR || status == PCAP_ERROR_NO_SUCH_DEVICE || status == PCAP_ERROR_PERM_DENIED)
+		strncpy(errbuf, pcap_geterr(p), PCAP_ERRBUF_SIZE);
+	else
+		snprintf(errbuf, PCAP_ERRBUF_SIZE, "%s: %s", source, pcap_statustostr(status));
+	pcap_close(p);
+	return (NULL);
 }

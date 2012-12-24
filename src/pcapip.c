@@ -50,6 +50,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_readfile,
 	pcapcfg_writefile,
 	pcapcfg_snaplen,
+	pcapcfg_buffersize,
 	pcapcfg_promisc,
 	{ 'l', "list", CONFIG_STR, {}, NULL, "file containing list of IP addresses" },
 	cfgopt_end

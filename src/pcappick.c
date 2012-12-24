@@ -47,6 +47,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_writefile,
 	pcapcfg_bpf,
 	pcapcfg_snaplen,
+	pcapcfg_buffersize,
 	pcapcfg_promisc,
 	{ 'c', "count", CONFIG_DEC, {}, NULL, "frame number to pick" },
 	cfgopt_end

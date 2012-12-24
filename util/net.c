@@ -65,6 +65,7 @@ char *human_readable_rate(u64 packets, u64 bytes, unsigned interval){
 	char *str;
 	CALLOC(str, 64);
 
+	if(interval == 0) interval = 1;
 	double div_packets = ((double) packets) / interval;
 	double div_bytes = ((double) bytes) / interval;
 

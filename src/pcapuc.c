@@ -53,6 +53,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_device,
 	pcapcfg_readfile,
 	pcapcfg_bpf,
+	pcapcfg_buffersize,
 	pcapcfg_promisc,
 	{ 'S', "countsrc",	CONFIG_BOOL, { .boolean = &count_src_only },	"0", "count src addresses only" },
 	{ 'D', "countdst",	CONFIG_BOOL, { .boolean = &count_dst_only },	"0", "count dst addresses only" },

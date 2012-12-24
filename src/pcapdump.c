@@ -56,6 +56,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_readfile,
 	pcapcfg_bpf,
 	pcapcfg_snaplen,
+	pcapcfg_buffersize,
 	pcapcfg_promisc,
 	pcapcfg_kickcmd,
 	{ 'u', "owner",         CONFIG_STR, {}, "root",  "output file owning user" },
@@ -75,6 +76,7 @@ static cfgopt_t cfg[] = {
 
 static pcap_args_t pa;
 
+static bool rotate_file = false;
 static bool check_interval = false;
 static bool headers_only = false;
 static bool reload_config = false;
@@ -91,6 +93,7 @@ static int64_t total_count_dropped;
 static int64_t total_count_packets;
 static time_t time_lastdump;
 static time_t time_start;
+static time_t time_start_dump;
 
 static bool pcapdump_sample_random = false;
 static int pcapdump_sample;
@@ -111,6 +114,7 @@ static void process_packet(u_char *, const struct pcap_pkthdr *, const u_char *)
 static void reset_config(void);
 static void reset_dump(void);
 static void setup_signals(void);
+static void sigusr2_handler(int x __unused);
 static void sigalarm_handler(int x __unused);
 static void sighup_handler(int x __unused);
 static void sigterm_handler(int x __unused);
@@ -133,10 +137,17 @@ int main(int argc, char **argv){
 	for(;;){
 		pcapnet_packet_loop(&pa, process_packet);
 		if(stop_running){
+			DEBUG("got: stop_running");
 			close_and_exit();
+		}else if(rotate_file){
+			DEBUG("got: rotate_file");
+			reset_dump();
+			rotate_file = false;
 		}else if(check_interval){
+			DEBUG("got: check_interval");
 			check_interval_and_reset();
 		}else if(reload_config){
+			DEBUG("got: reload_config");
 			reset_config();
 			reload_config = false;
 		}
@@ -194,11 +205,21 @@ static bool has_config_changed(void){
 	if(
 		cfgopt_get_num(cfg, "interval") != pcapdump_interval ||
 		cfgopt_get_num(cfg, "duration") != pcapdump_duration ||
-		cfgopt_get_bool(cfg, "promisc")  != pa.promisc ||
-		cfgopt_get_num(cfg, "snaplen")  != pa.snaplen ||
-		strcmp(pa.bpf_string,   cfgopt_get_str(cfg, "bpf")) != 0 ||
-		strcmp(pa.dev,		cfgopt_get_str(cfg, "device")) != 0 ||
-		strcmp(pcapdump_filefmt,cfgopt_get_str(cfg, "filefmt")) != 0
+		cfgopt_get_bool(cfg, "promisc") != pa.promisc ||
+		cfgopt_get_num(cfg, "snaplen") != pa.snaplen ||
+		cfgopt_get_num(cfg, "buffersize") != pa.buffer_size ||
+
+		(pa.bpf_string == NULL && cfgopt_get_str(cfg, "bpf") != NULL) ||
+		(pa.bpf_string != NULL && cfgopt_get_str(cfg, "bpf") == NULL) ||
+		(pa.bpf_string != NULL && cfgopt_get_str(cfg, "bpf") != NULL && strcmp(pa.bpf_string, cfgopt_get_str(cfg, "bpf")) != 0) ||
+
+		(pa.dev == NULL && cfgopt_get_str(cfg, "device") != NULL) ||
+		(pa.dev != NULL && cfgopt_get_str(cfg, "device") == NULL) ||
+		(pa.dev != NULL && cfgopt_get_str(cfg, "device") != NULL && strcmp(pa.dev, cfgopt_get_str(cfg, "device")) != 0) ||
+
+		(pcapdump_filefmt == NULL && cfgopt_get_str(cfg, "filefmt") != NULL) ||
+		(pcapdump_filefmt != NULL && cfgopt_get_str(cfg, "filefmt") == NULL) ||
+		(pcapdump_filefmt != NULL && cfgopt_get_str(cfg, "filefmt") != NULL && strcmp(pcapdump_filefmt, cfgopt_get_str(cfg, "filefmt")) != 0)
 	){
 		return true;
 	}else{
@@ -232,7 +253,7 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 	if(pcapdump_sample > 0 && !should_sample())
 		return;
 	if(unlikely(!headers_only)){
-		pcap_dump((u_char *) pa.dumper, hdr, pkt);
+		pcapnet_dump_pkt((u_char *) pa.dumper, hdr, pkt);
 		++count_packets;
 		count_bytes += hdr->len;
 	}else{
@@ -245,7 +266,7 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 				.caplen = applen,
 				.len = hdr->len,
 			};
-			pcap_dump((u_char *) pa.dumper, &newhdr, pkt);
+			pcapnet_dump_pkt((u_char *) pa.dumper, &newhdr, pkt);
 			++count_packets;
 			count_bytes += applen;
 		}
@@ -306,7 +327,10 @@ static void reset_dump(void){
 	struct tm *the_time = gmtime(&tv.tv_sec);
 	strftime(fname, FNAME_MAXLEN, pcapdump_filefmt, the_time);
 
-	update_and_print_stats();
+	if(time_start_dump > 0)
+		update_and_print_stats();
+
+	time_start_dump = tv.tv_sec;
 
 	if(pcapdump_interval > 0)
 		time_lastdump = tv.tv_sec - (tv.tv_sec % pcapdump_interval);
@@ -326,21 +350,23 @@ static void reset_dump(void){
 static void update_and_print_stats(void){
 	char *rate;
 	struct pcap_stat stat;
+	struct timeval tv;
 	unsigned count_dropped;
 
-	rate = human_readable_rate(count_packets, count_bytes, pcapdump_interval);
+	gettimeofday(&tv, NULL);
+	total_count_packets += count_packets;
+	total_count_bytes += count_bytes;
+	rate = human_readable_rate(count_packets, count_bytes, tv.tv_sec - time_start_dump);
+
 	if(pcap_stats(pa.handle, &stat) == 0){
 		count_dropped = stat.ps_drop - last_ifdrop;
 		total_count_dropped = stat.ps_drop;
 		last_ifdrop = stat.ps_drop;
-		if(time_lastdump > 0 && pcapdump_interval > 0)
-			DEBUG("%" PRIi64 " packets dumped (%u dropped) at %s",
-				count_packets, count_dropped, rate
-			);
+		DEBUG("%" PRIi64 " packets dumped (%u dropped) at %s",
+			count_packets, count_dropped, rate
+		);
 	}
 	FREE(rate);
-	total_count_packets += count_packets;
-	total_count_bytes += count_bytes;
 	count_packets = 0;
 	count_bytes = 0;
 }
@@ -353,21 +379,22 @@ static void print_end_stats(void){
 	gettimeofday(&tv, NULL);
 	total_count_packets += count_packets;
 	total_count_bytes += count_bytes;
-	count_packets = 0;
-	count_bytes = 0;
 	rate = human_readable_rate(total_count_packets, total_count_bytes, tv.tv_sec - time_start);
 
 	if(pcap_stats(pa.handle, &stat) == 0){
 		total_count_dropped += stat.ps_drop;
-		if(time_lastdump > 0 && pcapdump_interval > 0)
-			DEBUG("%" PRIi64 " total packets dumped (%" PRIi64 " dropped) at %s",
-				total_count_packets, total_count_dropped, rate
-			);
+		DEBUG("%" PRIi64 " total packets dumped (%" PRIi64 " dropped) at %s",
+			total_count_packets, total_count_dropped, rate
+		);
 	}
 	FREE(rate);
+	count_packets = 0;
+	count_bytes = 0;
 }
 
 static void setup_signals(void){
+	signal(SIGUSR2, sigusr2_handler);
+	siginterrupt(SIGUSR2, 1);
 	signal(SIGHUP, sighup_handler);
 	siginterrupt(SIGHUP, 1);
 	pcapnet_setup_signals(sigterm_handler);
@@ -376,6 +403,11 @@ static void setup_signals(void){
 		siginterrupt(SIGALRM, 1);
 		alarm(1);
 	}
+}
+
+static void sigusr2_handler(int x __unused){
+	rotate_file = true;
+	pcapnet_break_loop(&pa);
 }
 
 static void sigalarm_handler(int x __unused){
