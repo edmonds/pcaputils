@@ -56,6 +56,7 @@ THE SOFTWARE.
 #define pcapcfg_writefile	{ 'w', "writefile",	CONFIG_STR,	{}, NULL,	"output file" }
 #define pcapcfg_bpf		{ 'f', "bpf",		CONFIG_STR,	{}, NULL,	"bpf filter" }
 #define pcapcfg_snaplen		{ 's', "snaplen",	CONFIG_DEC,	{}, "1522",	"capture length" }
+#define pcapcfg_buffersize	{ 'B', "buffersize",CONFIG_DEC,	{}, "524288",	"buffer size" }
 #define pcapcfg_promisc		{ 'p', "promisc",	CONFIG_BOOL,	{}, "1",	"disable promiscuous mode" }
 #define pcapcfg_kickcmd		{ 'k', "kickcmd",	CONFIG_STR,	{}, NULL,	"kick off command after file rotation" }
 
@@ -72,6 +73,7 @@ typedef struct pcap_args {
 	int dumpfd;
 	int snaplen;
 	int to_ms;
+	int buffer_size;
 	pcap_dumper_t *dumper;
 	pcap_t *handle;
 	pcap_t *handle_out;
@@ -85,9 +87,10 @@ void pcapnet_break_loop(pcap_args_t *);
 void pcapnet_check_datalink_type(int dlt);
 void pcapnet_close(pcap_args_t *);
 void pcapnet_close_dump(pcap_args_t *);
+pcap_t *pcapnet_open_live(const char *source, int snaplen, int promisc, int to_ms, int buffer_size, char *errbuf);
 void pcapnet_init(pcap_args_t *);
 void pcapnet_init_bpf(pcap_args_t *);
-void pcapnet_init_device(pcap_t **, char *dev, int snaplen, int to_ms, bool promisc);
+void pcapnet_init_device(pcap_t **, char *dev, int snaplen, int to_ms, int buffer_size, bool promisc);
 void pcapnet_init_dump(pcap_args_t *, char *fname);
 void pcapnet_init_dumpfd(pcap_args_t *, int fd);
 void pcapnet_init_file(pcap_t **, char *fname);

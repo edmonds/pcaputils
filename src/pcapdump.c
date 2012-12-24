@@ -56,6 +56,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_readfile,
 	pcapcfg_bpf,
 	pcapcfg_snaplen,
+	pcapcfg_buffersize,
 	pcapcfg_promisc,
 	pcapcfg_kickcmd,
 	{ 'u', "owner",         CONFIG_STR, {}, "root",  "output file owning user" },
@@ -205,7 +206,8 @@ static bool has_config_changed(void){
 		cfgopt_get_num(cfg, "interval") != pcapdump_interval ||
 		cfgopt_get_num(cfg, "duration") != pcapdump_duration ||
 		cfgopt_get_bool(cfg, "promisc") != pa.promisc ||
-		cfgopt_get_num(cfg, "snaplen")  != pa.snaplen ||
+		cfgopt_get_num(cfg, "snaplen") != pa.snaplen ||
+		cfgopt_get_num(cfg, "buffersize") != pa.buffer_size ||
 
 		(pa.bpf_string == NULL && cfgopt_get_str(cfg, "bpf") != NULL) ||
 		(pa.bpf_string != NULL && cfgopt_get_str(cfg, "bpf") == NULL) ||
