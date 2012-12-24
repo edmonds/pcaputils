@@ -434,7 +434,10 @@ void pcapnet_close_dump(pcap_args_t *pa){
 void pcapnet_packet_loop(pcap_args_t *pa, pcap_handler cb){
 	if(!pa || !(pa->handle))
 		ERROR("pcap handle not initialized");
-	pcap_loop(pa->handle, -1, cb, (void *)pa);
+	int res = pcap_loop(pa->handle, -1, cb, (void *)pa);
+	DEBUG("pcap_loop returned %i", res);
+	if (res == -1)
+		ERROR("pcap_loop failed: %s", pcap_geterr(pa->handle));
 }
 
 void pcapnet_break_loop(pcap_args_t *pa){
