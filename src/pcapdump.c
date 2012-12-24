@@ -75,6 +75,7 @@ static cfgopt_t cfg[] = {
 
 static pcap_args_t pa;
 
+static bool rotate_file = false;
 static bool check_interval = false;
 static bool headers_only = false;
 static bool reload_config = false;
@@ -111,6 +112,7 @@ static void process_packet(u_char *, const struct pcap_pkthdr *, const u_char *)
 static void reset_config(void);
 static void reset_dump(void);
 static void setup_signals(void);
+static void sigusr2_handler(int x __unused);
 static void sigalarm_handler(int x __unused);
 static void sighup_handler(int x __unused);
 static void sigterm_handler(int x __unused);
@@ -134,6 +136,9 @@ int main(int argc, char **argv){
 		pcapnet_packet_loop(&pa, process_packet);
 		if(stop_running){
 			close_and_exit();
+		}else if(rotate_file){
+			reset_dump();
+			rotate_file = false;
 		}else if(check_interval){
 			check_interval_and_reset();
 		}else if(reload_config){
@@ -368,6 +373,8 @@ static void print_end_stats(void){
 }
 
 static void setup_signals(void){
+	signal(SIGUSR2, sigusr2_handler);
+	siginterrupt(SIGUSR2, 1);
 	signal(SIGHUP, sighup_handler);
 	siginterrupt(SIGHUP, 1);
 	pcapnet_setup_signals(sigterm_handler);
@@ -376,6 +383,11 @@ static void setup_signals(void){
 		siginterrupt(SIGALRM, 1);
 		alarm(1);
 	}
+}
+
+static void sigusr2_handler(int x __unused){
+	rotate_file = true;
+	pcapnet_break_loop(&pa);
 }
 
 static void sigalarm_handler(int x __unused){
