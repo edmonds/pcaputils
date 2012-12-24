@@ -136,13 +136,17 @@ int main(int argc, char **argv){
 	for(;;){
 		pcapnet_packet_loop(&pa, process_packet);
 		if(stop_running){
+			DEBUG("got: stop_running");
 			close_and_exit();
 		}else if(rotate_file){
+			DEBUG("got: rotate_file");
 			reset_dump();
 			rotate_file = false;
 		}else if(check_interval){
+			DEBUG("got: check_interval");
 			check_interval_and_reset();
 		}else if(reload_config){
+			DEBUG("got: reload_config");
 			reset_config();
 			reload_config = false;
 		}

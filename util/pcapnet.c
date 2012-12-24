@@ -397,10 +397,12 @@ void pcapnet_init_file(pcap_t **pcap, char *fname){
 void pcapnet_close(pcap_args_t *pa){
 	pcapnet_close_dump(pa);
 	if(pa->handle_out){
+		DEBUG("closing handle_out");
 		pcap_close(pa->handle_out);
 		pa->handle_out = NULL;
 	}
 	if(pa->handle){
+		DEBUG("closing handle");
 		pcap_close(pa->handle);
 		pa->handle = NULL;
 	}
