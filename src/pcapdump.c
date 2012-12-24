@@ -92,6 +92,7 @@ static int64_t total_count_dropped;
 static int64_t total_count_packets;
 static time_t time_lastdump;
 static time_t time_start;
+static time_t time_start_dump;
 
 static bool pcapdump_sample_random = false;
 static int pcapdump_sample;
@@ -311,7 +312,10 @@ static void reset_dump(void){
 	struct tm *the_time = gmtime(&tv.tv_sec);
 	strftime(fname, FNAME_MAXLEN, pcapdump_filefmt, the_time);
 
-	update_and_print_stats();
+	if(time_start_dump > 0)
+		update_and_print_stats();
+
+	time_start_dump = tv.tv_sec;
 
 	if(pcapdump_interval > 0)
 		time_lastdump = tv.tv_sec - (tv.tv_sec % pcapdump_interval);
@@ -331,21 +335,23 @@ static void reset_dump(void){
 static void update_and_print_stats(void){
 	char *rate;
 	struct pcap_stat stat;
+	struct timeval tv;
 	unsigned count_dropped;
 
-	rate = human_readable_rate(count_packets, count_bytes, pcapdump_interval);
+	gettimeofday(&tv, NULL);
+	total_count_packets += count_packets;
+	total_count_bytes += count_bytes;
+	rate = human_readable_rate(count_packets, count_bytes, tv.tv_sec - time_start_dump);
+
 	if(pcap_stats(pa.handle, &stat) == 0){
 		count_dropped = stat.ps_drop - last_ifdrop;
 		total_count_dropped = stat.ps_drop;
 		last_ifdrop = stat.ps_drop;
-		if(time_lastdump > 0 && pcapdump_interval > 0)
-			DEBUG("%" PRIi64 " packets dumped (%u dropped) at %s",
-				count_packets, count_dropped, rate
-			);
+		DEBUG("%" PRIi64 " packets dumped (%u dropped) at %s",
+			count_packets, count_dropped, rate
+		);
 	}
 	FREE(rate);
-	total_count_packets += count_packets;
-	total_count_bytes += count_bytes;
 	count_packets = 0;
 	count_bytes = 0;
 }
@@ -358,18 +364,17 @@ static void print_end_stats(void){
 	gettimeofday(&tv, NULL);
 	total_count_packets += count_packets;
 	total_count_bytes += count_bytes;
-	count_packets = 0;
-	count_bytes = 0;
 	rate = human_readable_rate(total_count_packets, total_count_bytes, tv.tv_sec - time_start);
 
 	if(pcap_stats(pa.handle, &stat) == 0){
 		total_count_dropped += stat.ps_drop;
-		if(time_lastdump > 0 && pcapdump_interval > 0)
-			DEBUG("%" PRIi64 " total packets dumped (%" PRIi64 " dropped) at %s",
-				total_count_packets, total_count_dropped, rate
-			);
+		DEBUG("%" PRIi64 " total packets dumped (%" PRIi64 " dropped) at %s",
+			total_count_packets, total_count_dropped, rate
+		);
 	}
 	FREE(rate);
+	count_packets = 0;
+	count_bytes = 0;
 }
 
 static void setup_signals(void){
