@@ -96,5 +96,6 @@ void pcapnet_packet_loop(pcap_args_t *, pcap_handler cb);
 void pcapnet_print_pkt(const struct pcap_pkthdr *, const u_char *);
 void pcapnet_reinit_device(pcap_args_t *);
 void pcapnet_setup_signals(void (*sighandler)(int));
+void pcapnet_dump_pkt(u_char *dumper, const struct pcap_pkthdr *h, const u_char *sp);
 
 #endif

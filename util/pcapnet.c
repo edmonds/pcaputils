@@ -413,13 +413,37 @@ void pcapnet_close(pcap_args_t *pa){
 	FREE(pa->kickcmd);
 }
 
+/* see sf-pcap.c (pcap_dump_flush and pcap_dump_close) */
 void pcapnet_close_dump(pcap_args_t *pa){
 	if(pa->dumper){
 		if(pa->fname_out)
 			DEBUG("closing pcap file %s", pa->fname_out);
-		pcap_dump_flush(pa->dumper);
-		pcap_dump_close(pa->dumper);
+
+		sigset_t new_mask;
+		sigset_t old_mask;
+
+		if (sigfillset(&new_mask) == -1)
+			ERROR("initializing full signal set failed: %s", strerror(errno));
+		if (sigemptyset(&old_mask) == -1)
+			ERROR("initializing empty signal set failed: %s", strerror(errno));
+
+		if (sigprocmask(SIG_BLOCK, &new_mask, &old_mask) == -1)
+			ERROR("blocking signals failed: %s", strerror(errno));
+
+		if (fflush((FILE *)pa->dumper) != 0)
+			ERROR("fflush failed: %s", strerror(errno));
+
+		if (ferror((FILE *)pa->dumper) != 0)
+			ERROR("ferror failed: %s", strerror(errno));
+
+		if (fclose((FILE *)pa->dumper) != 0)
+			ERROR("fclose failed: %s", strerror(errno));
+
+		if (sigprocmask(SIG_SETMASK, &old_mask, NULL) == -1)
+			ERROR("unblocking signals failed: %s", strerror(errno));
+
 		pa->dumper = NULL;
+
 		if(pa->kickcmd != NULL && pa->fname_out != NULL){
 			char *cmd = NULL;
 			if(asprintf(&cmd, "%s \"%s\" &", pa->kickcmd, pa->fname_out) < 0)
@@ -462,4 +486,48 @@ void pcapnet_print_pkt(const struct pcap_pkthdr *hdr, const u_char *pkt){
 		}
 		fprintf(stderr, "%2.x ", pkt[i]);
 	}
+}
+
+/* copied from pcap-int.h */
+struct pcap_timeval {
+	bpf_int32 tv_sec;       /* seconds */
+	bpf_int32 tv_usec;      /* microseconds */
+};
+
+/* copied from pcap-int.h */
+struct pcap_sf_pkthdr {
+	struct pcap_timeval ts; /* time stamp */
+	bpf_u_int32 caplen;     /* length of portion present */
+	bpf_u_int32 len;        /* length this packet (off wire) */
+};
+
+/* copied from sf-pcap.c - adapted to be safely used with signals */
+void pcapnet_dump_pkt(u_char *dumper, const struct pcap_pkthdr *h, const u_char *pkt){
+	FILE *f;
+	struct pcap_sf_pkthdr sf_hdr;
+	sigset_t new_mask;
+	sigset_t old_mask;
+
+	f = (FILE *)dumper;
+
+	sf_hdr.ts.tv_sec  = h->ts.tv_sec;
+	sf_hdr.ts.tv_usec = h->ts.tv_usec;
+	sf_hdr.caplen     = h->caplen;
+	sf_hdr.len        = h->len;
+
+	if (sigfillset(&new_mask) == -1)
+		ERROR("initializing full signal set failed: %s", strerror(errno));
+	if (sigemptyset(&old_mask) == -1)
+		ERROR("initializing empty signal set failed: %s", strerror(errno));
+
+	if (sigprocmask(SIG_BLOCK, &new_mask, &old_mask) == -1)
+		ERROR("blocking signals failed: %s", strerror(errno));
+
+	if (fwrite(&sf_hdr, sizeof(sf_hdr), 1, f) != 1)
+		ERROR("writing packet header failed: %s", strerror(errno));
+	if (fwrite(pkt, h->caplen, 1, f) != 1)
+		ERROR("writing packet body failed: %s", strerror(errno));
+
+	if (sigprocmask(SIG_SETMASK, &old_mask, NULL) == -1)
+		ERROR("unblocking signals failed: %s", strerror(errno));
 }

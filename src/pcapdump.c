@@ -251,7 +251,7 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 	if(pcapdump_sample > 0 && !should_sample())
 		return;
 	if(unlikely(!headers_only)){
-		pcap_dump((u_char *) pa.dumper, hdr, pkt);
+		pcapnet_dump_pkt((u_char *) pa.dumper, hdr, pkt);
 		++count_packets;
 		count_bytes += hdr->len;
 	}else{
@@ -264,7 +264,7 @@ static void process_packet(u_char *user __unused, const struct pcap_pkthdr *hdr,
 				.caplen = applen,
 				.len = hdr->len,
 			};
-			pcap_dump((u_char *) pa.dumper, &newhdr, pkt);
+			pcapnet_dump_pkt((u_char *) pa.dumper, &newhdr, pkt);
 			++count_packets;
 			count_bytes += applen;
 		}
