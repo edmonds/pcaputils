@@ -57,6 +57,7 @@ static cfgopt_t cfg[] = {
 	pcapcfg_bpf,
 	pcapcfg_snaplen,
 	pcapcfg_promisc,
+	pcapcfg_kickcmd,
 	{ 'u', "owner",         CONFIG_STR, {}, "root",  "output file owning user" },
 	{ 'g', "group",         CONFIG_STR, {}, "root",  "output file owning group" },
 	{ 'm', "mode",          CONFIG_OCT, {}, "0600",  "output file mode" },
@@ -318,7 +319,8 @@ static void reset_dump(void){
 	);
 	pcapnet_init_dumpfd(&pa, fd);
 	DEBUG("opened %s", fname);
-	FREE(fname);
+	FREE(pa.fname_out);
+	pa.fname_out = fname;
 }
 
 static void update_and_print_stats(void){
@@ -410,6 +412,7 @@ static void parse_args(int argc, char **argv){
 		usage("random sampling requires a random value");
 	if(pcapdump_sample_random)
 		rng_seed(false);
+	cfgopt_free(cur);
 }
 
 static void usage(const char *msg){

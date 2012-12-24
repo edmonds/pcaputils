@@ -24,8 +24,6 @@ THE SOFTWARE.
 
 */
 
-#define _GNU_SOURCE
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -37,7 +35,6 @@ THE SOFTWARE.
 #include <pcap.h>
 
 #include <util/cfgopt.h>
-#include <util/getline.h>
 #include <util/net.h>
 #include <util/pcapnet.h>
 #include <util/scanfmt.h>

@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <string.h>
 
 #include "cfgopt.h"
-#include "getline.h"
 #include "scanfmt.h"
 #include "util.h"
 
