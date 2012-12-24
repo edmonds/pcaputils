@@ -204,11 +204,20 @@ static bool has_config_changed(void){
 	if(
 		cfgopt_get_num(cfg, "interval") != pcapdump_interval ||
 		cfgopt_get_num(cfg, "duration") != pcapdump_duration ||
-		cfgopt_get_bool(cfg, "promisc")  != pa.promisc ||
+		cfgopt_get_bool(cfg, "promisc") != pa.promisc ||
 		cfgopt_get_num(cfg, "snaplen")  != pa.snaplen ||
-		strcmp(pa.bpf_string,   cfgopt_get_str(cfg, "bpf")) != 0 ||
-		strcmp(pa.dev,		cfgopt_get_str(cfg, "device")) != 0 ||
-		strcmp(pcapdump_filefmt,cfgopt_get_str(cfg, "filefmt")) != 0
+
+		(pa.bpf_string == NULL && cfgopt_get_str(cfg, "bpf") != NULL) ||
+		(pa.bpf_string != NULL && cfgopt_get_str(cfg, "bpf") == NULL) ||
+		(pa.bpf_string != NULL && cfgopt_get_str(cfg, "bpf") != NULL && strcmp(pa.bpf_string, cfgopt_get_str(cfg, "bpf")) != 0) ||
+
+		(pa.dev == NULL && cfgopt_get_str(cfg, "device") != NULL) ||
+		(pa.dev != NULL && cfgopt_get_str(cfg, "device") == NULL) ||
+		(pa.dev != NULL && cfgopt_get_str(cfg, "device") != NULL && strcmp(pa.dev, cfgopt_get_str(cfg, "device")) != 0) ||
+
+		(pcapdump_filefmt == NULL && cfgopt_get_str(cfg, "filefmt") != NULL) ||
+		(pcapdump_filefmt != NULL && cfgopt_get_str(cfg, "filefmt") == NULL) ||
+		(pcapdump_filefmt != NULL && cfgopt_get_str(cfg, "filefmt") != NULL && strcmp(pcapdump_filefmt, cfgopt_get_str(cfg, "filefmt")) != 0)
 	){
 		return true;
 	}else{
