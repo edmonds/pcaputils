@@ -185,7 +185,7 @@ static void parse_args(int argc, char **argv){
 		usage("need to specify a packet capture source");
 	int c = count_src_only + count_dst_only + count_pairs_only;
 	if(c > 1)
-		usage("mutually exclusive options selecetd");
+		usage("mutually exclusive options selected");
 	else if(c == 0)
 		usage("select a counting mode");
 }

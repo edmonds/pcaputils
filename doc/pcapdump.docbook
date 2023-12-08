@@ -21,7 +21,7 @@
 
   <refsect1>
     <title>DESCRIPTION</title>
-    <para><command>pcapdump</command> captures packets from a network interface and writes them to a dumpfile. The filename argument given to <option>-w</option> will be formated by <function>strftime(3)</function>.</para>
+    <para><command>pcapdump</command> captures packets from a network interface and writes them to a dumpfile. The filename argument given to <option>-w</option> will be formatted by <function>strftime(3)</function>.</para>
   </refsect1>
 
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pcapnet.docbook"/>
